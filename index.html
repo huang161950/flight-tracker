@@ -5,39 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>OpenSky 航班追蹤系統</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Microsoft JhengHei', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-    .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; }
-    .login-section { padding: 40px; text-align: center; }
-    .main-section { display: none; padding: 20px; }
-    h1 { color: #333; margin-bottom: 30px; font-size: 2.5em; }
-    h2 { color: #555; margin-bottom: 20px; font-size: 1.8em; }
-    .login-form { max-width: 400px; margin: 0 auto; }
-    .form-group { margin-bottom: 20px; text-align: left; }
-    label { display: block; margin-bottom: 5px; color: #666; font-weight: bold; }
-    input[type="text"], input[type="password"] { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; }
-    input[type="text"]:focus, input[type="password"]:focus { outline: none; border-color: #667eea; }
-    .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; transition: transform 0.2s; }
-    .btn:hover { transform: translateY(-2px); }
-    .btn-logout { background: #ff6b6b; margin-left: 10px; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #eee; }
-    .tracking-controls { display: grid; grid-template-columns: 1fr auto; gap: 15px; margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px; }
-    .flight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
-    .flight-card { background: white; border: 2px solid #e9ecef; border-radius: 12px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); transition: transform 0.3s, border-color 0.3s; }
-    .flight-card:hover { transform: translateY(-5px); border-color: #667eea; }
-    .flight-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
-    .flight-callsign { font-size: 1.4em; font-weight: bold; color: #333; }
-    .btn-remove { background: #ff6b6b; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
-    .flight-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .info-item { margin-bottom: 8px; }
-    .info-label { font-weight: bold; color: #666; font-size: 0.9em; }
-    .info-value { color: #333; font-size: 1.1em; }
-    .status-online { color: #28a745; font-weight: bold; }
-    .status-offline { color: #dc3545; font-weight: bold; }
-    .last-update { text-align: center; color: #666; font-style: italic; margin-top: 20px; }
-    .error-message { color: #dc3545; margin-top: 10px; padding: 10px; background: #f8d7da; border-radius: 5px; display: none; }
-    .success-message { color: #28a745; margin-top: 10px; padding: 10px; background: #d4edda; border-radius: 5px; display: none; }
-    @media (max-width: 768px) { .tracking-controls { grid-template-columns: 1fr; } .flight-grid { grid-template-columns: 1fr; } .header { flex-direction: column; gap: 15px; } }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Microsoft JhengHei',Arial,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px}
+    .container{max-width:1200px;margin:0 auto;background:#fff;border-radius:15px;box-shadow:0 20px 40px rgba(0,0,0,.1);overflow:hidden}
+    .login-section{padding:40px;text-align:center}
+    .main-section{display:none;padding:20px}
+    h1{color:#333;margin-bottom:30px;font-size:2.5em}
+    h2{color:#555;margin-bottom:20px;font-size:1.8em}
+    .login-form{max-width:400px;margin:0 auto}
+    .form-group{margin-bottom:20px;text-align:left}
+    label{display:block;margin-bottom:5px;color:#666;font-weight:bold}
+    input[type="text"],input[type="password"]{width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:16px;transition:border-color .3s}
+    input[type="text"]:focus,input[type="password"]:focus{outline:none;border-color:#667eea}
+    .btn{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;padding:12px 30px;border-radius:8px;font-size:16px;cursor:pointer;transition:transform .2s}
+    .btn:hover{transform:translateY(-2px)}
+    .btn-logout{background:#ff6b6b;margin-left:10px}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #eee}
+    .tracking-controls{display:grid;grid-template-columns:1fr auto;gap:15px;margin-bottom:30px;padding:20px;background:#f8f9fa;border-radius:10px}
+    .flight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-bottom:30px}
+    .flight-card{background:#fff;border:2px solid #e9ecef;border-radius:12px;padding:20px;box-shadow:0 5px 15px rgba(0,0,0,.08);transition:transform .3s,border-color .3s}
+    .flight-card:hover{transform:translateY(-5px);border-color:#667eea}
+    .flight-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;padding-bottom:10px;border-bottom:1px solid #eee}
+    .flight-callsign{font-size:1.4em;font-weight:bold;color:#333}
+    .btn-remove{background:#ff6b6b;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px}
+    .flight-info{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .info-item{margin-bottom:8px}
+    .info-label{font-weight:bold;color:#666;font-size:.9em}
+    .info-value{color:#333;font-size:1.1em}
+    .status-online{color:#28a745;font-weight:bold}
+    .status-offline{color:#dc3545;font-weight:bold}
+    .last-update{text-align:center;color:#666;font-style:italic;margin-top:20px}
+    .error-message{color:#dc3545;margin-top:10px;padding:10px;background:#f8d7da;border-radius:5px;display:none;white-space:pre-wrap}
+    .success-message{color:#28a745;margin-top:10px;padding:10px;background:#d4edda;border-radius:5px;display:none}
+    /* 偵錯面板 */
+    .debug-toggle{position:fixed;right:16px;bottom:16px;z-index:9999;border:none;border-radius:20px;padding:10px 14px;background:#333;color:#fff;font-size:14px;opacity:.85}
+    .debug-panel{position:fixed;right:16px;bottom:64px;max-width:92vw;width:720px;max-height:55vh;overflow:auto;background:#111;color:#eee;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.4);padding:12px 12px 8px;display:none;z-index:9999}
+    .debug-panel pre{white-space:pre-wrap;word-break:break-word;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    .debug-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+    .debug-header b{font-size:13px}
+    .debug-clear{background:#444;color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:12px}
+    @media (max-width:768px){.tracking-controls{grid-template-columns:1fr}.flight-grid{grid-template-columns:1fr}.header{flex-direction:column;gap:15px}}
   </style>
 </head>
 <body>
@@ -80,7 +87,18 @@
     </div>
   </div>
 
+  <!-- 偵錯 UI -->
+  <button class="debug-toggle" id="debugToggle">顯示偵錯</button>
+  <div class="debug-panel" id="debugPanel">
+    <div class="debug-header">
+      <b>偵錯輸出</b>
+      <button class="debug-clear" id="debugClear">清空</button>
+    </div>
+    <pre id="debugLog"></pre>
+  </div>
+
   <script>
+    /* ===== 狀態與設定 ===== */
     let currentUser = null;
     let trackedFlights = []; // { callsign: 'SJX847'(normalized), display: 'JX847', lastUpdated, data }
     let updateInterval = null;
@@ -96,24 +114,56 @@
       'MU':'CES','CZ':'CSN','CA':'CCA','HU':'CHH'
     };
 
-    // 將使用者輸入轉為 OpenSky 用的 callsign（ICAO+數字）
+    /* ===== 偵錯工具 ===== */
+    const debugPanel = document.getElementById('debugPanel');
+    const debugToggle = document.getElementById('debugToggle');
+    const debugLog = document.getElementById('debugLog');
+    const debugClear = document.getElementById('debugClear');
+
+    function logDebug(obj) {
+      try {
+        const ts = new Date().toISOString().replace('T',' ').replace('Z','');
+        const line = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+        debugLog.textContent += `[${ts}] ${line}\n`;
+        debugLog.scrollTop = debugLog.scrollHeight;
+        console.log('[DEBUG]', obj);
+      } catch(e) {
+        console.log('[DEBUG stringify failed]', obj);
+      }
+    }
+
+    debugToggle.onclick = () => {
+      debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
+      debugToggle.textContent = debugPanel.style.display === 'none' ? '顯示偵錯' : '隱藏偵錯';
+    };
+    debugClear.onclick = () => { debugLog.textContent = ''; };
+
+    // URL 加上 ?debug=1 自動展開偵錯
+    if (new URL(location.href).searchParams.get('debug') === '1') {
+      debugPanel.style.display = 'block';
+      debugToggle.textContent = '隱藏偵錯';
+    }
+
+    /* ===== 公用函式 ===== */
     function normalizeCallsign(input) {
       if (!input) return '';
       const raw = input.replace(/\s+/g, '').toUpperCase();
-      if (/^[A-Z]{3}\d+$/.test(raw)) return raw; // 已是 ICAO 3 碼
-      const m = raw.match(/^([A-Z]{2})(\d+)$/); // IATA 2 碼 + 數字
+      if (/^[A-Z]{3}\d+$/.test(raw)) return raw; // 已是 ICAO
+      const m = raw.match(/^([A-Z]{2})(\d+)$/); // IATA + 數字
       if (m) {
         const icao = IATA_TO_ICAO[m[1]];
         if (icao) return icao + m[2];
       }
-      return raw; // 其他情況原樣
+      return raw;
     }
 
     function buildProxyUrl() {
       const callsigns = trackedFlights.map(f => f.callsign).join(',');
-      return callsigns ? `${OPENSKY_PROXY}?callsigns=${encodeURIComponent(callsigns)}` : OPENSKY_PROXY;
+      const url = callsigns ? `${OPENSKY_PROXY}?callsigns=${encodeURIComponent(callsigns)}` : OPENSKY_PROXY;
+      return url;
     }
 
+    /* ===== 登入 & UI ===== */
     function checkLoginStatus() {
       const savedUser = localStorage.getItem('currentUser');
       const savedFlights = localStorage.getItem('trackedFlights');
@@ -121,11 +171,9 @@
         currentUser = savedUser;
         if (savedFlights) trackedFlights = JSON.parse(savedFlights);
 
-        // 兼容舊資料（只有 callsign 的情況）
+        // 兼容舊資料
         trackedFlights = (trackedFlights || []).map(f => {
-          if (typeof f === 'string') {
-            return { callsign: normalizeCallsign(f), display: f, lastUpdated: null, data: null };
-          }
+          if (typeof f === 'string') return { callsign: normalizeCallsign(f), display: f, lastUpdated: null, data: null };
           if (!f.display) f.display = f.callsign;
           f.callsign = normalizeCallsign(f.callsign || f.display);
           return f;
@@ -187,24 +235,9 @@
       const errorMessage = document.getElementById('errorMessage');
       const successMessage = document.getElementById('successMessage');
 
-      if (!userInput) {
-        errorMessage.textContent = '請輸入航班呼號';
-        errorMessage.style.display = 'block';
-        successMessage.style.display = 'none';
-        return;
-      }
-      if (trackedFlights.length >= 5) {
-        errorMessage.textContent = '最多只能追蹤5個航班';
-        errorMessage.style.display = 'block';
-        successMessage.style.display = 'none';
-        return;
-      }
-      if (trackedFlights.some(f => f.callsign === normalized)) {
-        errorMessage.textContent = '該航班已在追蹤列表中';
-        errorMessage.style.display = 'block';
-        successMessage.style.display = 'none';
-        return;
-      }
+      if (!userInput) { errorMessage.textContent = '請輸入航班呼號'; errorMessage.style.display='block'; successMessage.style.display='none'; return; }
+      if (trackedFlights.length >= 5) { errorMessage.textContent = '最多只能追蹤5個航班'; errorMessage.style.display='block'; successMessage.style.display='none'; return; }
+      if (trackedFlights.some(f => f.callsign === normalized)) { errorMessage.textContent = '該航班已在追蹤列表中'; errorMessage.style.display='block'; successMessage.style.display='none'; return; }
 
       trackedFlights.push({ callsign: normalized, display: userInput, lastUpdated: null, data: null });
       localStorage.setItem(`flights_${currentUser}`, JSON.stringify(trackedFlights));
@@ -218,7 +251,6 @@
     }
 
     function removeFlight(callsignOrDisplay) {
-      // 支援從按鈕傳入 display（畫面上顯示的原輸入）或 normalized callsign
       trackedFlights = trackedFlights.filter(f => f.display !== callsignOrDisplay && f.callsign !== callsignOrDisplay);
       localStorage.setItem(`flights_${currentUser}`, JSON.stringify(trackedFlights));
       updateFlightDisplay();
@@ -264,40 +296,71 @@
       });
     }
 
+    /* ===== 取得資料（含詳細偵錯） ===== */
     async function fetchFlightData() {
       if (trackedFlights.length === 0) return;
 
       const errorMessage = document.getElementById('errorMessage');
       const successMessage = document.getElementById('successMessage');
 
+      const url = buildProxyUrl();
+      const callsigns = trackedFlights.map(f => f.callsign);
+      logDebug({ step: 'fetchFlightData:start', url, callsigns });
+
+      let resp, text = '', json = null;
+      const t0 = performance.now();
       try {
-        const response = await fetch(buildProxyUrl());
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
+        resp = await fetch(url);
+        const t1 = performance.now();
+        text = await resp.text();
+        logDebug({ step: 'fetch:done', httpStatus: resp.status, elapsedMs: Math.round(t1 - t0), bytes: text.length });
 
-        if (data && data.states) {
-          let foundCount = 0;
-          trackedFlights.forEach(flight => {
-            const row = data.states.find(s => s[1] && s[1].trim().toUpperCase() === flight.callsign);
-            if (row) {
-              flight.data = row;
-              flight.lastUpdated = new Date().toLocaleTimeString();
-              foundCount++;
-            } else {
-              flight.data = null;
-            }
-          });
-
-          localStorage.setItem(`flights_${currentUser}`, JSON.stringify(trackedFlights));
-          updateFlightDisplay();
-          document.getElementById('lastUpdate').textContent =
-            `最後更新時間: ${new Date().toLocaleTimeString()} | 找到 ${foundCount}/${trackedFlights.length} 個航班`;
-          errorMessage.style.display = 'none';
-          successMessage.style.display = 'none';
+        // 嘗試解析 JSON
+        try {
+          json = text ? JSON.parse(text) : null;
+        } catch (e) {
+          logDebug({ step: 'json:parseError', message: e.message, preview: text.slice(0, 600) });
+          throw new Error('回應不是有效的 JSON（可能被限流或上游錯誤）；預覽：\n' + text.slice(0, 600));
         }
-      } catch (error) {
-        console.error('獲取數據失敗:', error);
-        errorMessage.textContent = '獲取數據失敗: ' + error.message + '。系統會自動重試。';
+
+        if (!resp.ok) {
+          logDebug({ step: 'http:notOk', status: resp.status, bodyPreview: text.slice(0, 600) });
+          throw new Error(`HTTP ${resp.status}：${text.slice(0, 200)}`);
+        }
+
+        const states = Array.isArray(json?.states) ? json.states : [];
+        const sample = states.slice(0, 10).map(s => s && s[1] ? s[1].trim().toUpperCase() : null).filter(Boolean);
+        logDebug({ step: 'json:ok', statesLen: states.length, sampleCalls: sample });
+
+        let foundCount = 0;
+        trackedFlights.forEach(flight => {
+          const row = states.find(s => s[1] && s[1].trim().toUpperCase() === flight.callsign);
+          if (row) {
+            flight.data = row;
+            flight.lastUpdated = new Date().toLocaleTimeString();
+            foundCount++;
+          } else {
+            flight.data = null;
+          }
+        });
+
+        localStorage.setItem(`flights_${currentUser}`, JSON.stringify(trackedFlights));
+        updateFlightDisplay();
+        document.getElementById('lastUpdate').textContent =
+          `最後更新時間: ${new Date().toLocaleTimeString()} | 找到 ${foundCount}/${trackedFlights.length} 個航班`;
+
+        if (foundCount === 0) {
+          logDebug('提示：未匹配到任何呼號；可能是航班不在線（地面/無回報），或呼號需再擴充 IATA→ICAO 對照。');
+          errorMessage.textContent = '沒有找到追蹤中的航班。可能不在線（地面/無回報）或呼號需轉換為 ICAO。';
+          errorMessage.style.display = 'block';
+        } else {
+          errorMessage.style.display = 'none';
+        }
+        successMessage.style.display = 'none';
+
+      } catch (err) {
+        logDebug({ step: 'fetch:error', message: String(err), responsePreview: text ? text.slice(0, 600) : '' });
+        errorMessage.textContent = '獲取數據失敗：' + String(err);
         errorMessage.style.display = 'block';
         successMessage.style.display = 'none';
       }
@@ -306,7 +369,7 @@
     function startTracking() {
       fetchFlightData();
       if (updateInterval) clearInterval(updateInterval);
-      updateInterval = setInterval(fetchFlightData, 60000); // 建議至少 60 秒
+      updateInterval = setInterval(fetchFlightData, 60000);
     }
 
     document.addEventListener('DOMContentLoaded', function() {
