@@ -37,11 +37,7 @@
     .last-update { text-align: center; color: #666; font-style: italic; margin-top: 20px; }
     .error-message { color: #dc3545; margin-top: 10px; padding: 10px; background: #f8d7da; border-radius: 5px; display: none; }
     .success-message { color: #28a745; margin-top: 10px; padding: 10px; background: #d4edda; border-radius: 5px; display: none; }
-    @media (max-width: 768px) {
-      .tracking-controls { grid-template-columns: 1fr; }
-      .flight-grid { grid-template-columns: 1fr; }
-      .header { flex-direction: column; gap: 15px; }
-    }
+    @media (max-width: 768px) { .tracking-controls { grid-template-columns: 1fr; } .flight-grid { grid-template-columns: 1fr; } .header { flex-direction: column; gap: 15px; } }
   </style>
 </head>
 <body>
@@ -72,7 +68,7 @@
       </div>
 
       <div class="tracking-controls">
-        <input type="text" id="newFlight" placeholder="輸入航班呼號 (例如: DLH123, UAL456)">
+        <input type="text" id="newFlight" placeholder="輸入航班呼號 (例如: JX847, BR10)">
         <button class="btn" onclick="addFlight()">新增追蹤航班</button>
       </div>
 
@@ -86,11 +82,32 @@
 
   <script>
     let currentUser = null;
-    let trackedFlights = [];
+    let trackedFlights = []; // { callsign: 'SJX847'(normalized), display: 'JX847', lastUpdated, data }
     let updateInterval = null;
 
-    // ★ 你的 Cloudflare Worker（CORS 代理）
+    // 你的 Cloudflare Worker（CORS 代理）
     const OPENSKY_PROXY = 'https://late-sun-e55a.huang161950.workers.dev';
+
+    // IATA -> ICAO 對照
+    const IATA_TO_ICAO = {
+      'JX':'SJX','BR':'EVA','CI':'CAL','B7':'UIA','AE':'MDA','IT':'TTW',
+      'JL':'JAL','NH':'ANA','CX':'CPA','SQ':'SIA','UA':'UAL','DL':'DAL','AA':'AAL','BA':'BAW',
+      'QF':'QFA','LH':'DLH','AF':'AFR','KL':'KLM','TG':'THA','VN':'HVN','KE':'KAL','OZ':'AAR','PR':'PAL',
+      'MU':'CES','CZ':'CSN','CA':'CCA','HU':'CHH'
+    };
+
+    // 將使用者輸入轉為 OpenSky 用的 callsign（ICAO+數字）
+    function normalizeCallsign(input) {
+      if (!input) return '';
+      const raw = input.replace(/\s+/g, '').toUpperCase();
+      if (/^[A-Z]{3}\d+$/.test(raw)) return raw; // 已是 ICAO 3 碼
+      const m = raw.match(/^([A-Z]{2})(\d+)$/); // IATA 2 碼 + 數字
+      if (m) {
+        const icao = IATA_TO_ICAO[m[1]];
+        if (icao) return icao + m[2];
+      }
+      return raw; // 其他情況原樣
+    }
 
     function buildProxyUrl() {
       const callsigns = trackedFlights.map(f => f.callsign).join(',');
@@ -102,7 +119,18 @@
       const savedFlights = localStorage.getItem('trackedFlights');
       if (savedUser) {
         currentUser = savedUser;
-        trackedFlights = savedFlights ? JSON.parse(savedFlights) : [];
+        if (savedFlights) trackedFlights = JSON.parse(savedFlights);
+
+        // 兼容舊資料（只有 callsign 的情況）
+        trackedFlights = (trackedFlights || []).map(f => {
+          if (typeof f === 'string') {
+            return { callsign: normalizeCallsign(f), display: f, lastUpdated: null, data: null };
+          }
+          if (!f.display) f.display = f.callsign;
+          f.callsign = normalizeCallsign(f.callsign || f.display);
+          return f;
+        });
+
         showMainSection();
         startTracking();
       }
@@ -154,11 +182,12 @@
 
     function addFlight() {
       const input = document.getElementById('newFlight');
-      const callsign = input.value.trim().toUpperCase();
+      const userInput = input.value.trim().toUpperCase();
+      const normalized = normalizeCallsign(userInput);
       const errorMessage = document.getElementById('errorMessage');
       const successMessage = document.getElementById('successMessage');
 
-      if (!callsign) {
+      if (!userInput) {
         errorMessage.textContent = '請輸入航班呼號';
         errorMessage.style.display = 'block';
         successMessage.style.display = 'none';
@@ -170,17 +199,17 @@
         successMessage.style.display = 'none';
         return;
       }
-      if (trackedFlights.some(f => f.callsign === callsign)) {
+      if (trackedFlights.some(f => f.callsign === normalized)) {
         errorMessage.textContent = '該航班已在追蹤列表中';
         errorMessage.style.display = 'block';
         successMessage.style.display = 'none';
         return;
       }
 
-      trackedFlights.push({ callsign, lastUpdated: null, data: null });
+      trackedFlights.push({ callsign: normalized, display: userInput, lastUpdated: null, data: null });
       localStorage.setItem(`flights_${currentUser}`, JSON.stringify(trackedFlights));
 
-      successMessage.textContent = `已成功追蹤航班 ${callsign}`;
+      successMessage.textContent = `已成功追蹤航班 ${userInput}`;
       successMessage.style.display = 'block';
       errorMessage.style.display = 'none';
       input.value = '';
@@ -188,12 +217,13 @@
       fetchFlightData();
     }
 
-    function removeFlight(callsign) {
-      trackedFlights = trackedFlights.filter(f => f.callsign !== callsign);
+    function removeFlight(callsignOrDisplay) {
+      // 支援從按鈕傳入 display（畫面上顯示的原輸入）或 normalized callsign
+      trackedFlights = trackedFlights.filter(f => f.display !== callsignOrDisplay && f.callsign !== callsignOrDisplay);
       localStorage.setItem(`flights_${currentUser}`, JSON.stringify(trackedFlights));
       updateFlightDisplay();
       const sm = document.getElementById('successMessage');
-      sm.textContent = `已移除航班 ${callsign}`;
+      sm.textContent = `已移除航班 ${callsignOrDisplay}`;
       sm.style.display = 'block';
     }
 
@@ -205,7 +235,7 @@
         flightGrid.innerHTML = `
           <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666;">
             <h3>尚未追蹤任何航班</h3>
-            <p>請在上方輸入航班呼號開始追蹤</p>
+            <p>請在上方輸入航班呼號開始追蹤（支援 IATA：如 JX847）</p>
           </div>`;
         return;
       }
@@ -216,8 +246,8 @@
         card.className = 'flight-card';
         card.innerHTML = `
           <div class="flight-header">
-            <div class="flight-callsign">${flight.callsign}</div>
-            <button class="btn-remove" onclick="removeFlight('${flight.callsign}')">移除</button>
+            <div class="flight-callsign">${flight.display} <span style="font-size:.75em;color:#888;">(${flight.callsign})</span></div>
+            <button class="btn-remove" onclick="removeFlight('${flight.display}')">移除</button>
           </div>
           <div class="flight-info">
             <div class="info-item"><div class="info-label">狀態</div>
@@ -276,7 +306,7 @@
     function startTracking() {
       fetchFlightData();
       if (updateInterval) clearInterval(updateInterval);
-      updateInterval = setInterval(fetchFlightData, 60000); // 建議至少 60 秒，避免上游限流
+      updateInterval = setInterval(fetchFlightData, 60000); // 建議至少 60 秒
     }
 
     document.addEventListener('DOMContentLoaded', function() {
